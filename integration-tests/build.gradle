@@ -1,0 +1,54 @@
+def integrationTestsProjectDir = project.projectDir
+
+apply plugin: 'idea'
+apply plugin: 'java-library'
+apply plugin: 'eu.xenit.alfresco'
+apply plugin: 'eu.xenit.docker-compose'
+
+sourceSets {
+    integrationTest {
+        java.srcDirs = ["${integrationTestsProjectDir}/src/test/java"]
+        resources.srcDirs = ["${integrationTestsProjectDir}/src/test/resources"]
+        compileClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
+        runtimeClasspath += sourceSets.main.output + configurations.testRuntimeClasspath
+    }
+}
+
+configurations {
+    integrationTestImplementation.extendsFrom testImplementation
+    integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+}
+
+task integrationTest(type: Test) {
+    description = 'Runs the integration tests.'
+    group = 'verification'
+    testClassesDirs = sourceSets.integrationTest.output.classesDirs
+    classpath = sourceSets.integrationTest.runtimeClasspath
+    shouldRunAfter test
+}
+check.dependsOn integrationTest
+
+dependencies {
+    alfrescoProvided platform("org.alfresco:acs-community-packaging:23.1.0")
+    alfrescoProvided("org.alfresco:alfresco-repository")
+    alfrescoProvided('org.alfresco:alfresco-remote-api')
+    alfrescoProvided('org.alfresco:alfresco-data-model')
+    implementation group: 'log4j', name: 'log4j', version: '1.2.17'
+    // To setup on server side!
+    implementation 'com.github.ruediste.remoteJUnit:remoteJUnit-codeRunnerServer:1.1'
+    // https://mvnrepository.com/artifact/com.github.ruediste.remoteJUnit/remoteJUnit-codeRunnerClient
+    implementation 'com.github.ruediste.remoteJUnit:remoteJUnit-client:1.1'
+    testImplementation group: 'org.springframework', name: 'spring-test', version: '6.1.10'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.0.0'
+}
+
+def projectDocker = project(":alfresco-docker") // contains the docker-build
+evaluationDependsOn(projectDocker.path)
+def composeUpTask = projectDocker.tasks.getByName("composeUp")
+def composeDownTask = projectDocker.tasks.getByName("composeDown")
+
+// Only the integration tests actually need the Docker containers to run. However, they're currently part of the regular test suite.
+integrationTest {
+//    dependsOn composeUpTask
+//    finalizedBy composeDownTask
+}

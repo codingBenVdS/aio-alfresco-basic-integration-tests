@@ -1,0 +1,61 @@
+plugins{
+    id 'idea'
+    id 'java-library'
+    id 'eu.xenit.alfresco'
+    id 'eu.xenit.docker-alfresco'
+    id 'eu.xenit.docker-compose'
+    id 'be.vbgn.ci-detect'
+    id 'com.github.johnrengelman.shadow' version '7.1.2' // Apply the Shadow plugin
+}
+
+dockerBuild {
+    // Change this to community edition image
+    // Base image used in the FROM of the docker build. Should be a compatible image.
+    alfresco {
+        baseImage = 'private.docker.xenit.eu/alfresco-enterprise/alfresco-repository-enterprise:23.1.0'
+        leanImage = true
+    }
+}
+
+dependencies {
+    baseAlfrescoWar platform("org.alfresco:acs-packaging:23.1.0")
+    baseAlfrescoWar 'org.alfresco:content-services@war'
+    alfrescoProvided 'org.alfresco:alfresco-repository:23.1.0.255'
+
+    testImplementation 'junit:junit:4.13.2'
+    testImplementation 'org.mockito:mockito-core:4.2.0'
+    testImplementation 'org.apache.httpcomponents:httpclient:4.5.13'
+    testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.0.0'
+
+    //    testImplementation group: 'org.alfresco.maven', name: 'alfresco-rad', version: '4.8.0'
+    alfrescoSM "com.gradecak.alfresco-mvc:alfresco-mvc-rest:${mvc}"
+    alfrescoSM "com.gradecak.alfresco-mvc:alfresco-mvc-aop:${mvc}"
+    implementation project(path: ':integration-tests') // Read in the integrationTest project. (Webscript + Static ApplicationContext + Server)
+
+    // No longer include the normal .jar file but the .all.jar file
+    alfrescoSM files(shadowJar)
+}
+
+dockerCompose {
+    useComposeFiles = ['docker-compose.yml']
+    // Don't use the dev compose file during CI builds
+    if (!ci.isCi()) {
+        // Allow the dev compose file to be deleted
+        def extraComposeFile = 'debug-extension.docker-compose.yml'
+        if (project.file(extraComposeFile).exists()) {
+            useComposeFiles.add(extraComposeFile)
+        }
+    }
+}
+
+shadowJar {
+    archiveClassifier.set('')  // This ensures the shadow JAR doesn't get a classifier, so it's named as the regular JAR
+    from sourceSets.main.output
+}
+
+tasks.build {
+    dependsOn shadowJar
+}
+tasks.jar {
+    enabled = false
+}

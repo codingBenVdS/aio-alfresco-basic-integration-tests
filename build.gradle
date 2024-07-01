@@ -1,0 +1,44 @@
+plugins {
+    // Centralize plugin version management
+    id 'be.vbgn.ci-detect' version '0.5.0' apply false
+    id 'eu.xenit.amp' version '1.1.0' apply false
+    id 'eu.xenit.alfresco' version '1.1.0' apply false
+    id 'eu.xenit.docker-alfresco' version '5.3.1' apply false
+    id 'eu.xenit.docker-compose' version '5.3.1' apply false
+}
+
+def static getVersionQualifier(String branch_name) {
+    if(branch_name.startsWith('release'))
+        return ''
+    return '-SNAPSHOT'
+}
+
+ext {
+    versionWithoutQualifier = '1.0.0'
+    mvc = '9.0.0'
+    jackson_version = '2.15.2'
+    http_version = '4.3.4'
+}
+
+allprojects {
+    apply plugin: 'java'
+    group = 'eu.xenit.integrationtest.basic'
+    version = versionWithoutQualifier + getVersionQualifier(System.env.BRANCH_NAME ?: 'local')
+    sourceCompatibility = 17
+    targetCompatibility = 17
+
+    repositories {
+        mavenCentral()
+        mavenLocal()
+        maven { url "https://artifacts.alfresco.com/nexus/content/groups/public" }
+        // This private repository provides Xenit with Alfresco enterprise artefacts.
+        // External developers should replace it with their own library repository.
+        maven {
+            url 'https://artifacts.alfresco.com/nexus/content/groups/private'
+            credentials {
+                username System.env.ALFRESCO_NEXUS_USERNAME ?: property("org.alfresco.maven.nexus.username")
+                password System.env.ALFRESCO_NEXUS_PASSWORD ?: property("org.alfresco.maven.nexus.password")
+            }
+        }
+    }
+}

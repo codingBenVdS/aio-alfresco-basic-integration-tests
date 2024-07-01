@@ -1,0 +1,4 @@
+rootProject.name = "alfresco-integration-tests"
+
+include(":alfresco-docker")
+include(":integration-tests")
