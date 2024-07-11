@@ -17,6 +17,10 @@ sourceSets {
 configurations {
     integrationTestImplementation.extendsFrom testImplementation
     integrationTestRuntimeOnly.extendsFrom testRuntimeOnly
+
+    all {
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+    }
 }
 
 task integrationTest(type: Test) {
@@ -33,13 +37,18 @@ dependencies {
     alfrescoProvided("org.alfresco:alfresco-repository")
     alfrescoProvided('org.alfresco:alfresco-remote-api')
     alfrescoProvided('org.alfresco:alfresco-data-model')
-    implementation group: 'log4j', name: 'log4j', version: '1.2.17'
-    // To setup on server side!
+     // To setup on server side!
     implementation 'com.github.ruediste.remoteJUnit:remoteJUnit-codeRunnerServer:1.1'
     // https://mvnrepository.com/artifact/com.github.ruediste.remoteJUnit/remoteJUnit-codeRunnerClient
     implementation 'com.github.ruediste.remoteJUnit:remoteJUnit-client:1.1'
-    testImplementation group: 'org.springframework', name: 'spring-test', version: '6.1.10'
+    testImplementation group: 'org.springframework', name: 'spring-test', version: '6.0.12'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.0.0'
+
+    implementation "com.gradecak.alfresco-mvc:alfresco-mvc-rest:9.0.0"
+    implementation "com.gradecak.alfresco-mvc:alfresco-mvc-aop:9.0.0"
+    // Fix for missing javax.xml.bind library for fasterxml
+    // https://github.com/FasterXML/jackson-modules-base/discussions/239
+    implementation group: 'javax.xml.bind', name: 'jaxb-api', version: '2.3.1'
 }
 
 def projectDocker = project(":alfresco-docker") // contains the docker-build
@@ -49,6 +58,6 @@ def composeDownTask = projectDocker.tasks.getByName("composeDown")
 
 // Only the integration tests actually need the Docker containers to run. However, they're currently part of the regular test suite.
 integrationTest {
-//    dependsOn composeUpTask
+    dependsOn composeUpTask
 //    finalizedBy composeDownTask
 }

@@ -3,6 +3,8 @@ package org.alfresco.demoamp;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.alfresco.demoamp.helper.HelperClass;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -15,13 +17,12 @@ import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.util.EntityUtils;
-import org.apache.log4j.Logger;
 import org.junit.Before;
 import org.junit.Test;
 
 // Runs on your local machine
 public class HelloWorldWebScriptIT {
-    static Logger log = Logger.getLogger(HelloWorldWebScriptIT.class);
+    static Logger log = LoggerFactory.getLogger(HelloWorldWebScriptIT.class);
     private CloseableHttpClient httpclient;
 
     @Before
