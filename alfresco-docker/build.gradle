@@ -5,22 +5,22 @@ plugins{
     id 'eu.xenit.docker-alfresco'
     id 'eu.xenit.docker-compose'
     id 'be.vbgn.ci-detect'
-    id 'com.github.johnrengelman.shadow' version '7.1.2' // Apply the Shadow plugin
+    id 'com.github.johnrengelman.shadow' version '7.1.2'
 }
 
 dockerBuild {
     // Change this to community edition image
     // Base image used in the FROM of the docker build. Should be a compatible image.
     alfresco {
-        baseImage = 'private.docker.xenit.eu/alfresco-enterprise/alfresco-repository-enterprise:23.1.0'
+        baseImage = "docker.io/xenit/alfresco-repository-community:23.1.0" //'org.alfresco:acs-community-packaging:23.1.0'//'private.docker.xenit.eu/alfresco-enterprise/alfresco-repository-enterprise:23.1.0' // docker.io/xenit/alfresco-share-community:23.1.0.1
         leanImage = true
     }
 }
 
 dependencies {
-    baseAlfrescoWar platform("org.alfresco:acs-packaging:23.1.0")
-    baseAlfrescoWar 'org.alfresco:content-services@war'
-    alfrescoProvided 'org.alfresco:alfresco-repository:23.1.0.255'
+    // Import Alfresco-community edition
+    baseAlfrescoWar platform('org.alfresco:acs-community-packaging:23.1.0')
+    baseAlfrescoWar 'org.alfresco:content-services-community@war'
 
     testImplementation 'junit:junit:4.13.2'
     testImplementation 'org.mockito:mockito-core:4.2.0'
